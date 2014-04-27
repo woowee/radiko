@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -u
 export LANG="ja_JP.UTF-8" LC_ALL="ja_JP.UTF-8"
 
 

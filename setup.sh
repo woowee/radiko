@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -36,7 +36,7 @@ if ! type brew > /dev/null 2>&1; then
     echo -e "ERROR: its not been installed 'homebrew'. we need 'homebrew' enviroment, so install that.\nexit this process."
     exit 1
 fi
-echo "OK: command 'brew' => $(type brew | awk -F' ' '{print $NF}')"
+echo -e "OK: command 'brew' => $(brew --prefix)"
 
 # radiko.conf
 if [ ! -e ./radiko.conf ]; then
@@ -44,11 +44,12 @@ if [ ! -e ./radiko.conf ]; then
     exit 1
 fi
 source ./radiko.conf
-echo "OK: file 'radiko.conf' => $(mdfind -onlyin $(pwd) -name 'radiko.conf')"
+echo -e "OK: file 'radiko.conf' => $(mdfind -onlyin $(pwd) -name 'radiko.conf')"
 
 #
 # 環境構築
 #
+echo ""
 existence_directory "${DIR_RADIKO_WRK}"   # 録音データ出力用
 existence_directory "${DIR_RADIKO_CACHE}" # 録音データ出力用DIR.キャッシュ
 existence_directory "${DIR_RADIKO_RAW}"   # 録音データ出力用DIR.録音済ファイル(*.acc)
@@ -61,13 +62,14 @@ if [ ! -e "${DIR_RADIKO_TABLE}" ]; then
     echo "#keyword,channel,weekday(sun|mon|tue|wed|thr|fri|sat),start(hhmm),end(hhmm),title,artist,genre,album" > ${FILE_RADIKO_TABLE}
 fi
 
+echo ""
 existence_command "wget"
 existence_command "swfextract" "swftools" # swfextract is in swftools.
 existence_command "rtmpdump"
 existence_command "ffmpeg"
 existence_command "base64"
 
-existence_command "eyeD3_script" "eyeD3"
+existence_command "eyeD3"
 
 #
 #その他
@@ -82,23 +84,23 @@ in order to install and use mid3v2 we need the following;
 - Mutagen (mid3v2 is incuded with it)
 
 Steps ;
-1. %brew install python
-2. %pip install --upgrade setuptools
-   %pip install --upgrade pip
-   # check `pip freeze`
-3. %echo 'export PATH=/usr/local/bin:/usr/local/share/python:$PATH' >> ~/.zshrc
-   %source ~/.zshrc
-4. %pip install mutagen
-   # check `type mid3v2`
+$ brew install python
+$ brew install python3
+$ brew link --overwrite python
+
+$ pip install mutagen
+
 END
 else
     echo "OK: command 'mid3v2' => $(type mid3v2 | awk -F' ' '{print $NF}')"
 fi
 
-echo "\033[1mNow it's done.\033[0m"
+echo -e "\n\033[32m==>\033[0m \033[1mNow it's done.\033[0m\n"
+
 cat << END
-please prepare for the recording Radiko successively.
-0. set up mid3v2. (if it's not yet)
-1. prepare 'radiko.table' and so execute `./setschedule.sh` to regester with launchd.
-2. get artworks and sotre into 'coverarts' directory.
+* please prepare for the recording Radiko successively. ;
+    0. set up mid3v2. (if it's not yet)
+    1. prepare 'radiko.table' and so execute \`setschedule.sh\` to regester with launchd.
+    2. get artworks and sotre into 'coverarts' directory.
 END
+

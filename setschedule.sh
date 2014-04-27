@@ -138,27 +138,29 @@ END
 #
 #prepare
 #
-while true; do
-    printf 'clean plists about radiko?  [y(es)/n(o)] : '
-    read res
-    case ${res} in
-        [Yy]*)
-            # for plistis in $(ls "${DIR_LAUNCHAGENTS}/*.plist")
-            for plistis in $(ls ${DIR_LAUNCHAGENTS}/koo.radiko.*.plist); do
-                if [ -z "${plistis}" -o ! -e "${plistis}" ]; then
-                    continue
-                fi
-                #remove job
-                job_label=$(basename "${plistis}" ".plist")
-                launchctl remove ${job_label}
-                rm ${plistis}
-            done
-            break;;
-        [Nn]*) break;;
-        *)
-            echo "Can't read your enter. try again."
-    esac
-done
+if [ $(mdfind -count -onlyin $HOME/Library/LaunchAgents -name "koo.radiko") -gt 0 ]; then
+    while true; do
+        printf 'clean plists about radiko?  [y(es)/n(o)] : '
+        read res
+        case ${res} in
+            [Yy]*)
+                # for plistis in $(ls "${DIR_LAUNCHAGENTS}/*.plist")
+                for plistis in $(ls ${DIR_LAUNCHAGENTS}/koo.radiko.*.plist); do
+                    if [ -z "${plistis}" -o ! -e "${plistis}" ]; then
+                        continue
+                    fi
+                    #remove job
+                    job_label=$(basename "${plistis}" ".plist")
+                    launchctl remove ${job_label}
+                    rm ${plistis}
+                done
+                break;;
+            [Nn]*) break;;
+            *)
+                echo "Can't read your enter. try again."
+        esac
+    done
+fi
 
 #
 #regester recording shedule with system
@@ -229,4 +231,5 @@ while true; do
             echo "Can't read your enter. try again."
     esac
 done
-echo "it's done."
+
+echo -e "\n\033[32m==>\033[0m \033[1mNow it's done.\033[0m\n"
