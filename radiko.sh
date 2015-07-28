@@ -13,7 +13,7 @@ cd `dirname ${0}`
 #    $DIR_RADIKO_EDT   : 編集済データ、iTunes へ転送
 #  $DIR_CELLAR         : homebrew の各ツールが格納さえているディレクトリ
 #  $MARGIN             : 録音時間のマージン(min)
-#  $MYEXTENTION        : 録音データの出力へbん缶フォーマット
+#  $MYEXTENTION        : 録音データの出力変換フォーマット
 
 DIR_MYRADIKOREC=${DIR_RADIKO_WRK}
 DIR_MYRADIKOREC_CACHE=${DIR_RADIKO_CACHE}
@@ -35,7 +35,6 @@ else
 fi
 
 # radiko へのアクセス
-# PLAYERURL=http://radiko.jp/player/swf/player_3.1.0.00.swf
 PLAYERURL=http://radiko.jp/player/swf/player_4.0.0.00.swf
 PLAYERFILE="./player.swf"
 KEYFILE="./authkey.png"
@@ -147,20 +146,36 @@ echo "areaid: ${areaid}"
 rm -f auth2_fms${SUFFIX}
 
 #
+# get stream-url
+#
+
+if [ -f ${STATION}.xml ]; then
+  rm -f ${STATION}.xml
+fi
+
+wget -q "http://radiko.jp/v2/station/stream/${STATION}.xml"
+
+stream_url=$(echo "cat /url/item[1]/text()" | xmllint --shell ${STATION}.xml | tail -2 | head -1)
+url_parts=($(echo ${stream_url} | perl -pe 's!^(.*)://(.*?)/(.*)/(.*?)$/!$1://$2 $3 $4!'))
+
+rm -f ${STATION}.xml
+
+
+#
 # rtmpdump
 #
 retrycount=0
 while :
 do
     ${DIR_MYCELLAR}/rtmpdump -v \
-        -r "rtmpe://w-radiko.smartstream.ne.jp" \
-        --playpath "simul-stream.stream" \
-        --app "${STATION}/_definst_" \
-        -W ${PLAYERURL} \
-        -C S:"" -C S:"" -C S:"" -C S:${authtoken} \
-        --live \
-        --stop ${DURATION} \
-        -o ${FILE_DMP}
+      -r ${url_parts[0]} \
+      --app ${url_parts[1]} \
+      --playpath ${url_parts[2]} \
+      -W ${PLAYERURL} \
+      -C S:"" -C S:"" -C S:"" -C S:${authtoken} \
+      --live \
+      --stop ${DURATION} \
+      -o ${FILE_DMP}
   if [ $? -ne 1 -o `wc -c ${FILE_DMP} | awk '{print $1}'` -ge 10240 ]; then
     break
   elif [ ${retrycount} -ge 5 ]; then
